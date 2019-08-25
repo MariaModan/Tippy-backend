@@ -28,7 +28,16 @@ app.get('/', (req,res) => {
 app.post('/signin', (req,res) => {
     const { email, password } = req.body;
     
-    res.json(email)
+    db.select('hash').from('login').where('email', '=', email)
+        .then(data => {
+            const hash = data[0].hash;
+            if (bcrypt.compareSync(password, hash)){
+                res.json('success')
+            }else {
+                res.json('invalid credentials')
+            }
+        })
+        .catch(err => res.status(400).json('error logging in'))  
 })
 
 app.post('/signup', (req,res) => {
