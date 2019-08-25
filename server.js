@@ -9,7 +9,7 @@ const db = knex({
     connection: {
         host : '127.0.0.1',
         user : 'postgres',
-        password : '',
+        password : 'aA123adata',
         database : 'tippy'
       } 
 })
@@ -28,11 +28,14 @@ app.get('/', (req,res) => {
 app.post('/signin', (req,res) => {
     const { email, password } = req.body;
     
-    db.select('hash').from('login').where('email', '=', email)
+    db.select(['hash','userid']).from('login').where('email', '=', email)
         .then(data => {
             const hash = data[0].hash;
+            const userid = data[0].userid;
             if (bcrypt.compareSync(password, hash)){
-                res.json('success')
+                db.select('*').from('users').where('userid', '=', userid)
+                    .then( user => res.json(user[0]))
+                    .catch( err => res.json('error getting user data'))
             }else {
                 res.json('invalid credentials')
             }
