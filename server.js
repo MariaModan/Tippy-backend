@@ -76,5 +76,17 @@ app.post('/signup', (req,res) => {
     
 })
 
+app.post('/addproject', (req,res) => {
+    const { projectTitle, userid } = req.body;
+
+    db('projects')
+        .insert({
+            project_title: projectTitle,
+            userid: userid
+        })
+        .returning('projectid')
+        .then(projectid => res.json(projectid[0]))
+})
+
 const PORT = process.env.PORT || 5500;
 app.listen(PORT, () => console.log(`App is running on port ${PORT}`));
