@@ -88,5 +88,19 @@ app.post('/addproject', (req,res) => {
         .then(projectid => res.json(projectid[0]))
 })
 
+app.post('/listprojects', (req,res) => {
+    const { userid } = req.body;
+
+    db.select('project_title').from('projects').where('userid', '=', userid)
+    .then(projects => {
+        let projectsArr = [];
+        projects.map(project => {
+            projectsArr.push(project.project_title)
+        })
+        res.json(projectsArr)
+    })
+    .catch(err => res.status(400).json('error retrieving the project list'))
+})
+
 const PORT = process.env.PORT || 5500;
 app.listen(PORT, () => console.log(`App is running on port ${PORT}`));
