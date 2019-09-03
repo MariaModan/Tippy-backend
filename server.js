@@ -91,14 +91,8 @@ app.post('/addproject', (req,res) => {
 app.post('/listprojects', (req,res) => {
     const { userid } = req.body;
 
-    db.select('project_title').from('projects').where('userid', '=', userid)
-    .then(projects => {
-        let projectsArr = [];
-        projects.map(project => {
-            projectsArr.push(project.project_title)
-        })
-        res.json(projectsArr)
-    })
+    db.select('project_title', 'projectid').from('projects').where('userid', '=', userid)
+    .then(projects => res.json(projects))
     .catch(err => res.status(400).json('error retrieving the project list'))
 })
 
