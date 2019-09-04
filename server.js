@@ -96,5 +96,19 @@ app.post('/listprojects', (req,res) => {
     .catch(err => res.status(400).json('error retrieving the project list'))
 })
 
+app.post('/addtodo', (req,res) => {
+    const { projectid, userid, task_title } = req.body;
+
+    db('todo_tasks')
+        .insert({
+            projectid: projectid,
+            userid: userid,
+            task_title: task_title
+        })
+        .returning('task_title')
+        .then(newTask=> res.json('added new task'))
+        .catch(err => res.json('error adding new task'))
+})
+
 const PORT = process.env.PORT || 5500;
 app.listen(PORT, () => console.log(`App is running on port ${PORT}`));
