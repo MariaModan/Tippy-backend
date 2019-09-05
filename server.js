@@ -107,7 +107,15 @@ app.post('/addtodo', (req,res) => {
         })
         .returning('task_title')
         .then(newTask=> res.json('added new task'))
-        .catch(err => res.json('error adding new task'))
+        .catch(err => res.status(400).json(err))
+})
+
+app.post('/listtodo', (req,res) => {
+    const { projectid } = req.body;
+
+    db.select('task_title', 'taskid').from('todo_tasks').where('projectid', '=', projectid)
+    .then(todos => res.json(todos))
+    .catch(err => res.status(400).json('error getting the todo list'))
 })
 
 const PORT = process.env.PORT || 5500;
