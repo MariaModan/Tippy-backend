@@ -118,5 +118,38 @@ app.post('/listtodo', (req,res) => {
     .catch(err => res.status(400).json('error getting the todo list'))
 })
 
+app.post('/addInProgress', (req,res) => {
+    const { projectid, taskid, userid, task_title} = req.body;
+
+    db.transaction( trx => {
+        trx('inprogress_tasks')
+        .insert({
+            projectid: projectid,
+            userid: userid,
+            taskid: taskid,
+            task_title: task_title
+        })
+        .returning('taskid')
+        .then(taskid => {
+            return trx('todo_tasks')
+                    .where('taskid', '=', taskid[0])
+                    .del()
+                    .returning('*')
+        })
+        .then(movedTask=> res.json('moved task to inProgress'))
+        .then(trx.commit)
+        .catch(trx.rollback)
+    })
+    
+})
+
+app.post('/listInProgress', (req,res) => {
+    const { projectid } = req.body;
+
+    db.select('task_title', 'taskid').from('inprogress_tasks').where('projectid', '=', projectid)
+    .then(inprogress => res.json(inprogress))
+    .catch(err => res.status(400).json('error getting the in progress list'))
+})
+
 const PORT = process.env.PORT || 5500;
 app.listen(PORT, () => console.log(`App is running on port ${PORT}`));
