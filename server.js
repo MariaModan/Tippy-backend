@@ -164,7 +164,7 @@ app.post('/listinprogress', (req,res) => {
 
 app.post('/addFinished', (req,res) => {
     const { projectid, taskid, userid, task_title} = req.body;
-    
+
     db.transaction( trx => {
         trx('finished_tasks')
         .insert({
@@ -185,6 +185,14 @@ app.post('/addFinished', (req,res) => {
         .catch(trx.rollback)
     })
     
+})
+
+app.post('/listfinished', (req,res) => {
+    const { projectid } = req.body;
+
+    db.select('task_title', 'taskid').from('finished_tasks').where('projectid', '=', projectid)
+    .then(finished => res.json(finished))
+    .catch(err => res.status(400).json('error getting the finished tasks list'))
 })
 
 const PORT = process.env.PORT || 5500;
