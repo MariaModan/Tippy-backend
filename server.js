@@ -96,6 +96,17 @@ app.post('/listprojects', (req,res) => {
     .catch(err => res.status(400).json('error retrieving the project list'))
 })
 
+app.delete('/delproject', (req,res) => {
+    const { projectid } = req.body;
+
+    db('projects')
+        .where('projectid' , '=', projectid)
+        .del()
+        .returning('*')
+        .then( project => res.json('project deleted'))
+        .catch( err => res.json(err))
+})
+
 app.post('/addtodo', (req,res) => {
     const { projectid, userid, task_title } = req.body;
 
@@ -107,7 +118,7 @@ app.post('/addtodo', (req,res) => {
         })
         .returning('task_title')
         .then(newTask=> res.json('added new task'))
-        .catch(err => res.status(400).json(err))
+        .catch(err => res.status(400).json('error deleting project'))
 })
 
 app.post('/listtodo', (req,res) => {
@@ -143,12 +154,37 @@ app.post('/addInProgress', (req,res) => {
     
 })
 
-app.post('/listInProgress', (req,res) => {
+app.post('/listinprogress', (req,res) => {
     const { projectid } = req.body;
 
     db.select('task_title', 'taskid').from('inprogress_tasks').where('projectid', '=', projectid)
     .then(inprogress => res.json(inprogress))
     .catch(err => res.status(400).json('error getting the in progress list'))
+})
+
+app.post('/addFinished', (req,res) => {
+    const { projectid, taskid, userid, task_title} = req.body;
+    
+    db.transaction( trx => {
+        trx('finished_tasks')
+        .insert({
+            projectid: projectid,
+            userid: userid,
+            taskid: taskid,
+            task_title: task_title
+        })
+        .returning('taskid')
+        .then(taskid => {
+            return trx('inprogress_tasks')
+                    .where('taskid', '=', taskid[0])
+                    .del()
+                    .returning('*')
+        })
+        .then(movedTask=> res.json('moved task to finished'))
+        .then(trx.commit)
+        .catch(trx.rollback)
+    })
+    
 })
 
 const PORT = process.env.PORT || 5500;
