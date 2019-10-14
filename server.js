@@ -99,12 +99,33 @@ app.post('/listprojects', (req,res) => {
 app.delete('/delproject', (req,res) => {
     const { projectid } = req.body;
 
-    db('projects')
+    db.transaction( trx => {
+        trx('projects')
         .where('projectid' , '=', projectid)
         .del()
-        .returning('*')
-        .then( project => res.json('project deleted'))
-        .catch( err => res.json(err))
+        .returning('projectid')
+        .then( id => {
+            return trx('todo_tasks')
+                    .where('projectid', '=', projectid)
+                    .del()
+                    .returning('projectid')
+        })
+        .then( id => {
+            return trx('inprogress_tasks')
+                    .where('projectid', '=', projectid)
+                    .del()
+                    .returning('projectid')
+        })
+        .then( id => {
+            return trx('finished_tasks')
+                    .where('projectid', '=', projectid)
+                    .del()
+                    .returning('projectid')
+        })
+        .then(projectid => res.json('the project and all its tasks have been deleted'))
+        .then(trx.commit)
+        .catch(trx.rollback)
+    })
 })
 
 app.post('/addtodo', (req,res) => {
@@ -164,7 +185,7 @@ app.post('/listinprogress', (req,res) => {
 
 app.post('/addFinished', (req,res) => {
     const { projectid, taskid, userid, task_title} = req.body;
-    
+
     db.transaction( trx => {
         trx('finished_tasks')
         .insert({
@@ -185,6 +206,14 @@ app.post('/addFinished', (req,res) => {
         .catch(trx.rollback)
     })
     
+})
+
+app.post('/listfinished', (req,res) => {
+    const { projectid } = req.body;
+
+    db.select('task_title', 'taskid').from('finished_tasks').where('projectid', '=', projectid)
+    .then(finished => res.json(finished))
+    .catch(err => res.status(400).json('error getting the finished tasks list'))
 })
 
 const PORT = process.env.PORT || 5500;
