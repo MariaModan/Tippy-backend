@@ -3,13 +3,14 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const knex = require('knex');
+const database_password = require('./database_password.js')
 
 const db = knex({
     client: 'pg',
     connection: {
         host : '127.0.0.1',
         user : 'postgres',
-        password : 'aA123adata',
+        password : database_password,
         database : 'tippy'
       } 
 })
