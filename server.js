@@ -17,8 +17,19 @@ const db = knex({
 
 const app = express();
 
+const whitelist = ['http://localhost:3000', 'localhost:3000'];
+const corsOptions ={
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1) {
+          callback(null, true)
+        } else {
+          callback(new Error('Not allowed by CORS'))
+        }
+      }
+}
+
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 app.get('/', (req,res) => {
     console.log('ok1');
@@ -138,8 +149,8 @@ app.post('/addtodo', (req,res) => {
             userid: userid,
             task_title: task_title
         })
-        .returning('task_title')
-        .then(newTask=> res.json('added new task'))
+        .returning('*')
+        .then(data=> res.json(data))
         .catch(err => res.status(400).json('error deleting project'))
 })
 
