@@ -32,8 +32,6 @@ app.use(bodyParser.json());
 app.use(cors(corsOptions));
 
 app.get('/', (req,res) => {
-    console.log('ok1');
-
     res.json('is working');
 })
 
@@ -207,7 +205,7 @@ app.post('/addFinished', (req,res) => {
             task_title: task_title
         })
         .returning('taskid')
-        .then(taskid => {
+        .then(taskid => { 
             return trx('inprogress_tasks')
                     .where('taskid', '=', taskid[0])
                     .del()
@@ -226,6 +224,39 @@ app.post('/listfinished', (req,res) => {
     db.select('task_title', 'taskid').from('finished_tasks').where('projectid', '=', projectid)
     .then(finished => res.json(finished))
     .catch(err => res.status(400).json('error getting the finished tasks list'))
+})
+
+app.delete('/deltask-Todo', (req, res) => {
+    const { taskid } = req.body;
+
+    db('todo_tasks')
+        .where('taskid', '=', taskid)
+        .del()
+        .returning('taskid')
+        .then( deltask => res.json(deltask[0]))
+        .catch( err => res.status(400).json('error deleting todo task'))
+})
+
+app.delete('/deltask-Inprogress', (req, res) => {
+    const { taskid } = req.body;
+
+    db('inprogress_tasks')
+        .where('taskid', '=', taskid)
+        .del()
+        .returning('taskid')
+        .then( deltask => res.json(deltask[0]))
+        .catch( err => res.status(400).json('error deleting inprogress task'))
+})
+
+app.delete('/deltask-Finished', (req, res) => {
+    const { taskid } = req.body;
+
+    db('finished_tasks')
+        .where('taskid', '=', taskid)
+        .del()
+        .returning('taskid')
+        .then( deltask => res.json(deltask[0]))
+        .catch( err => res.status(400).json('error deleting finished task'))
 })
 
 const PORT = process.env.PORT || 5500;
