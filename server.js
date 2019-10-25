@@ -29,7 +29,7 @@ const corsOptions ={
 }
 
 app.use(bodyParser.json());
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.get('/', (req,res) => {
     res.json('is working');
@@ -51,6 +51,14 @@ app.post('/signin', (req,res) => {
             }
         })
         .catch(err => res.status(400).json('error logging in'))  
+})
+
+app.post('/registeredUser', (req,res) => {
+    const { email } = req.body;
+
+    db.select('email').from('users').where('email', '=', email)
+        .then(user => res.json(user[0].email))
+        .catch(err => res.json('error in checking if user is already registered'))
 })
 
 app.post('/signup', (req,res) => {
@@ -132,7 +140,7 @@ app.delete('/delproject', (req,res) => {
                     .del()
                     .returning('projectid')
         })
-        .then(projectid => res.json('the project and all its tasks have been deleted'))
+        .then(projectid => res.json(projectid))
         .then(trx.commit)
         .catch(trx.rollback)
     })
