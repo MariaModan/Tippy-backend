@@ -10,7 +10,7 @@ const db = knex({
     connection: {
         host : '127.0.0.1',
         user : 'postgres',
-        password : database_password,
+        password :aA123adata,
         database : 'tippy'
       } 
 })
@@ -157,7 +157,7 @@ app.post('/addtodo', (req,res) => {
         })
         .returning('*')
         .then(data=> res.json(data))
-        .catch(err => res.status(400).json('error deleting project'))
+        .catch(err => res.status(400).json('error adding todo'))
 })
 
 app.post('/listtodo', (req,res) => {
